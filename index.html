@@ -2,34 +2,57 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>High-Res ASCII Generator</title>
+<title>ASCII Generator</title>
 <style>
-  body { font-family: monospace; padding: 20px; }
-  #ascii { white-space: pre; font-size: 6px; line-height: 6px; }
+  body { font-family: monospace; margin: 20px; }
+  #ascii { white-space: pre; font-size: 8px; line-height: 8px; }
+  #controls {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: #fff;
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    font-size: 12px;
+  }
 </style>
 </head>
 <body>
 
-<h2>High‑Resolution ASCII Art Generator</h2>
+<div id="controls">
+  Resolution: <input type="range" id="res" min="40" max="200" value="120">
+</div>
 
+<h2>ASCII Art Generator</h2>
 <input type="file" id="file" accept="image/*"><br><br>
 <div id="ascii"></div>
 
 <script>
 const fileInput = document.getElementById("file");
 const asciiBox = document.getElementById("ascii");
+const resSlider = document.getElementById("res");
+
+let currentImage = null;
 
 fileInput.onchange = () => {
     const file = fileInput.files[0];
     if (!file) return;
 
     const img = new Image();
-    img.onload = () => convertToASCII(img);
+    img.onload = () => {
+        currentImage = img;
+        convertToASCII();
+    };
     img.src = URL.createObjectURL(file);
 };
 
-function convertToASCII(img) {
-    const width = 200; // HIGH RES WIDTH
+resSlider.oninput = () => {
+    if (currentImage) convertToASCII();
+};
+
+function convertToASCII() {
+    const img = currentImage;
+    const width = parseInt(resSlider.value);
     const scale = img.height / img.width;
     const height = Math.floor(width * scale * 0.55);
 
@@ -40,11 +63,12 @@ function convertToASCII(img) {
     const ctx = canvas.getContext("2d");
     ctx.drawImage(img, 0, 0, width, height);
 
-    const chars = "@%#*+=-:. "; // more detail
+    const chars = "@%#*+=-:. ";
     const data = ctx.getImageData(0, 0, width, height).data;
 
     let html = "";
 
+    // PERFORMANCE: build a single string, not thousands of DOM nodes
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
             const i = (y * width + x) * 4;
@@ -56,10 +80,9 @@ function convertToASCII(img) {
             const index = Math.floor((brightness / 255) * (chars.length - 1));
             const char = chars[index];
 
-            // DOUBLE-DENSITY: print two chars per pixel
-            html += `<span style="color: rgb(${r},${g},${b})">${char}${char}</span>`;
+            html += `<span style="color: rgb(${r},${g},${b})">${char}</span>`;
         }
-        html += "<br>";
+        html += "\n";
     }
 
     asciiBox.innerHTML = html;
