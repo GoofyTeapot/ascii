@@ -2,15 +2,15 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Color ASCII Generator</title>
+<title>High-Res ASCII Generator</title>
 <style>
   body { font-family: monospace; padding: 20px; }
-  #ascii { font-size: 8px; line-height: 8px; white-space: pre; }
+  #ascii { white-space: pre; font-size: 6px; line-height: 6px; }
 </style>
 </head>
 <body>
 
-<h2>Color ASCII Art Generator</h2>
+<h2>High‑Resolution ASCII Art Generator</h2>
 
 <input type="file" id="file" accept="image/*"><br><br>
 <div id="ascii"></div>
@@ -29,7 +29,7 @@ fileInput.onchange = () => {
 };
 
 function convertToASCII(img) {
-    const width = 120;
+    const width = 200; // HIGH RES WIDTH
     const scale = img.height / img.width;
     const height = Math.floor(width * scale * 0.55);
 
@@ -40,7 +40,7 @@ function convertToASCII(img) {
     const ctx = canvas.getContext("2d");
     ctx.drawImage(img, 0, 0, width, height);
 
-    const chars = "@#%xo;:,. ";
+    const chars = "@%#*+=-:. "; // more detail
     const data = ctx.getImageData(0, 0, width, height).data;
 
     let html = "";
@@ -56,7 +56,8 @@ function convertToASCII(img) {
             const index = Math.floor((brightness / 255) * (chars.length - 1));
             const char = chars[index];
 
-            html += `<span style="color: rgb(${r},${g},${b})">${char}</span>`;
+            // DOUBLE-DENSITY: print two chars per pixel
+            html += `<span style="color: rgb(${r},${g},${b})">${char}${char}</span>`;
         }
         html += "<br>";
     }
