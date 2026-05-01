@@ -2,18 +2,18 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>ASCII Generator</title>
+<title>Color ASCII Generator</title>
 <style>
   body { font-family: monospace; padding: 20px; }
-  #ascii { white-space: pre; font-size: 8px; line-height: 8px; }
+  #ascii { font-size: 8px; line-height: 8px; white-space: pre; }
 </style>
 </head>
 <body>
 
-<h2>ASCII Art Generator</h2>
+<h2>Color ASCII Art Generator</h2>
 
 <input type="file" id="file" accept="image/*"><br><br>
-<pre id="ascii"></pre>
+<div id="ascii"></div>
 
 <script>
 const fileInput = document.getElementById("file");
@@ -29,9 +29,9 @@ fileInput.onchange = () => {
 };
 
 function convertToASCII(img) {
-    const width = 120; // output width
+    const width = 120;
     const scale = img.height / img.width;
-    const height = Math.floor(width * scale * 0.55); // adjust for font aspect ratio
+    const height = Math.floor(width * scale * 0.55);
 
     const canvas = document.createElement("canvas");
     canvas.width = width;
@@ -40,26 +40,28 @@ function convertToASCII(img) {
     const ctx = canvas.getContext("2d");
     ctx.drawImage(img, 0, 0, width, height);
 
-    const chars = "@#%xo;:,. "; // darkest → lightest
-    const imgData = ctx.getImageData(0, 0, width, height).data;
+    const chars = "@#%xo;:,. ";
+    const data = ctx.getImageData(0, 0, width, height).data;
 
-    let ascii = "";
+    let html = "";
+
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
             const i = (y * width + x) * 4;
-            const r = imgData[i];
-            const g = imgData[i+1];
-            const b = imgData[i+2];
+            const r = data[i];
+            const g = data[i+1];
+            const b = data[i+2];
 
             const brightness = (r + g + b) / 3;
             const index = Math.floor((brightness / 255) * (chars.length - 1));
+            const char = chars[index];
 
-            ascii += chars[index];
+            html += `<span style="color: rgb(${r},${g},${b})">${char}</span>`;
         }
-        ascii += "\n";
+        html += "<br>";
     }
 
-    asciiBox.textContent = ascii;
+    asciiBox.innerHTML = html;
 }
 </script>
 
